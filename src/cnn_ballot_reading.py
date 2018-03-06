@@ -9,7 +9,6 @@ def cnn_model_fn(features, labels, mode):
 	# Input Layer
 	input_layer = tf.reshape(features["x"], [-1, 28, 28, 1])
 
-	# Convolutional Layer #1
 	conv1 = tf.layers.conv2d(
 		inputs=input_layer,
 		filters=32,
@@ -17,17 +16,24 @@ def cnn_model_fn(features, labels, mode):
 		padding="same",
 		activation=tf.nn.relu)
 
-	# Pooling Layer #1
-	pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+	pool1 = tf.layers.max_pooling2d(
+		inputs=conv1,
+		pool_size=[2, 2],
+		strides=2
+	)
 
-	# Convolutional Layer #2 and Pooling Layer #2
 	conv2 = tf.layers.conv2d(
-	inputs=pool1,
-	filters=64,
-	kernel_size=[5, 5],
-	padding="same",
-	activation=tf.nn.relu)
-	pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+		inputs=pool1,
+		filters=64,
+		kernel_size=[5, 5],
+		padding="same",
+		activation=tf.nn.relu)
+
+	pool2 = tf.layers.max_pooling2d(
+		inputs=conv2,
+		pool_size=[2, 2],
+		strides=2
+	)
 
 	# Dense Layer
 	pool2_flat = tf.reshape(pool2, [-1, 7 * 7 * 64])
@@ -77,7 +83,7 @@ def main(unused_argv):
 
 	# Create the Estimator
 	mnist_classifier = tf.estimator.Estimator(
-		model_fn=cnn_model_fn, model_dir="/tmp/mnist_convnet_model")
+		model_fn=cnn_model_fn, model_dir="./mnist_convnet_model")
 
 	# Set up logging for predictions
 	tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -93,7 +99,7 @@ def main(unused_argv):
 		shuffle=True)
 	mnist_classifier.train(
 		input_fn=train_input_fn,
-		steps=250,
+		steps=50000,
 		hooks=[logging_hook])
 
 	# Evaluate the model and print results
@@ -104,7 +110,6 @@ def main(unused_argv):
 		shuffle=False)
 	eval_results = mnist_classifier.evaluate(input_fn=eval_input_fn)
 	print(eval_results)
-
 
 
 if __name__ == "__main__":
